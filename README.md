@@ -12,6 +12,6 @@ I have been looking at different features that I wanted to visualize. However, I
 
 So for now, I have compared the two playlists (insead of songs). 
 
-
+<img src="https://github.com/Tes98/BECKI/blob/main/becki%20robotje.png" alt="drawing" width="200"/>
 
 
