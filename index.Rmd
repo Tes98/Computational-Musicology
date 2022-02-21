@@ -9,22 +9,26 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Readme
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## please don't show this portfolio in class (yet)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+In the course Computational Musicology we have to choose a corpus that allows for a meaningful comparison between musical tracks. I hear more and more that artists are increasingly inspired by classical music, so for this assignment, it seems interesting to me to compare classical music with pop and dance music. The research question I will try to answer in this portfolio is: In what way does classical music express itself in pop and dance music? 
 
-```{r cars}
-summary(cars)
-```
+I will use 2 sorts of playlists:
+One with classical music and one with pop and dance music.
+
+It is said that a lot of pop and dance music is based on classical music. For example, it seems that Blackbird from the Beatles is based on Moonlight Sonata from Beethoven. Or that Memories from Maroon 5 is based on Pachelbel.
+
+
 
 ## Including Plots
 
-You can also embed plots, for example:
+I have been looking at different features that I wanted to visualize. However, I am not jet satisfied with the results. The plan was to compare two different songs where I wanted to look at the differences in timbre and beats. I have not yet succeeded to make a visualization of it. 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+So for now, I have compared the two playlists (insead of songs). 
+Below you can see a boxplot. It shows the range of the keys in the two categories. You can see that there is a big overlap of keys used by classical music and pop music.
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+![an image caption Source: Boxplot of 2 categories, classical music and pop music. representing the keys used for the tracks.](/Users/tessa/Documents/Kunstmatige intelligentie 3/musicology/portfolio/boxplot key.png)
+
+I don't think this is a very interesting plot for my research question, but like I said, I was unable to visualize the data I had in mind. For the next time, the expectation is that with some help I will be able to analyse features of a single song instead of a hole playlist. 
