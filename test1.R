@@ -32,5 +32,5 @@ total %>% ggplot(aes(x = category, y = key)) +
 total %>% ggplot(aes(x = category, y = timbre)) +
   geom_boxplot() 
 
-two_songs %>% ggplot(aes(x = duration_ms, y = tempo, color = category)) +
+gaga %>% ggplot(aes(x = track:length, y = timbre, color = category)) +
   geom_point() + geom_smooth() 

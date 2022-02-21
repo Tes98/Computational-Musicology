@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 In the course Computational Musicology we have to choose a corpus that allows for a meaningful comparison between musical tracks. I hear more and more that artists are increasingly inspired by classical music, so for this assignment, it seems interesting to me to compare classical music with pop and dance music. The research question I will try to answer in this portfolio is: In what way does classical music express itself in pop and dance music? 
 
 I will use 2 sorts of playlists:
-One with classical music and one with pop and dance music.
+One with classical music and one with pop and dance music. For now, both playlists have 30 tracks.
 
 It is said that a lot of pop and dance music is based on classical music. For example, it seems that Blackbird from the Beatles is based on Moonlight Sonata from Beethoven. Or that Memories from Maroon 5 is based on Pachelbel.
 
