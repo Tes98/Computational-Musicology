@@ -13,7 +13,7 @@ I have been looking at different features that I wanted to visualize. However, I
 So for now, I have compared the two playlists (insead of songs). 
 Below you can see a boxplot. It shows the range of the keys in the two categories. You can see that there is a big overlap of keys used by classical music and pop music.
 
-<img src="https://github.com/Tes98/Computational-Musicology/blob/main/boxplot%20key.png" alt="drawing" width="200"/>
+<img src="https://github.com/Tes98/Computational-Musicology/blob/main/boxplot%20key.png" alt="drawing" width="400"/>
 
 
 I don't think this is a very interesting plot for my research question, but like I said, I was unable to visualize the data I had in mind. For the next time, the expectation is that with some help I will be able to analyse features of a single song instead of a hole playlist. 
