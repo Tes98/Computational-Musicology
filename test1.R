@@ -2,6 +2,7 @@ library(tidyverse)
 library(spotifyr)
 library(ggplot2)
 
+#testing plots
 pop <- get_playlist_audio_features("","4vQc2Q7ERByqmRpFnD4GfI")
 classical <- get_playlist_audio_features("", "6dIXmgBDBwhp0J6CKKD7Hn")
 gaga <- get_track_audio_analysis(c("1HHeOs6zRdF8Ck58easiAY"))
