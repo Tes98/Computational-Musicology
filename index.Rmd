@@ -132,11 +132,11 @@ In this visualization, we look at timbre information to see if songs could be us
 There are twelve Spotify timbre coefficients. From all coefficients, a mean per coefficient for each song can be calculated. 
 
 As seen here, when those means are visualized with a boxplot, the distribution of timbre coefficient values overall isn’t that different, especially for the middle timbre coefficients. However, coefficients 1, 2, and 11 show differences.
-(explain what this means)
+(- explain what this means)
 
     - adjust scale of plot
     - remove code box above plot
 
 ### Conclusion 
 
-Still working on the conclusion
+Still working on the conclusion 
