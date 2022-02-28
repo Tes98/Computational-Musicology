@@ -1,6 +1,10 @@
-library(tidyverse)
-library(spotifyr)
 library(ggplot2)
+library(tidyverse)
+library(tidymodels)
+library(plotly) # N.B. Requires the Cairo package
+library(protoclust)
+library(heatmaply)
+library(spotifyr)
 
 #testing plots
 pop <- get_playlist_audio_features("","4vQc2Q7ERByqmRpFnD4GfI")

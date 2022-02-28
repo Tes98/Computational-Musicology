@@ -1,34 +1,142 @@
 ---
 title: "Classicle aspects of pop music"
 author: "Tessa Vermeulen"
-date: '2022-02-18'
-output: html_document
+date: 'February 2022'
+output:
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    theme: cerulean
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(tidymodels)
+library(plotly) # N.B. Requires the Cairo package
+library(protoclust)
+library(heatmaply)
+library(spotifyr)
+library(compmus)
+
 ```
 
-## Readme
 
-## please don't show this portfolio in class (yet)
+
+### Introduction 
 
 In the course Computational Musicology we have to choose a corpus that allows for a meaningful comparison between musical tracks. I hear more and more that artists are increasingly inspired by classical music, so for this assignment, it seems interesting to me to compare classical music with pop and dance music. The research question I will try to answer in this portfolio is: In what way does classical music express itself in pop and dance music? 
 
 I will use 2 sorts of playlists:
-One with classical music and one with pop and dance music. For now, both playlists consist of 30 tracks.
+One with classical music and one with pop and dance music.
 
 It is said that a lot of pop and dance music is based on classical music. For example, it seems that Blackbird from the Beatles is based on Moonlight Sonata from Beethoven. Or that Memories from Maroon 5 is based on Pachelbel.
 
+***
+[spotify playlist](<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4vQc2Q7ERByqmRpFnD4GfI?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>)
+
+### First visualization
+
+```{r include=FALSE}
+pop <- get_playlist_audio_features("","4vQc2Q7ERByqmRpFnD4GfI")
+classical <- get_playlist_audio_features("", "6dIXmgBDBwhp0J6CKKD7Hn")
+
+total <-
+  bind_rows(
+    pop %>% mutate(category = "Pop"),
+    classical %>% mutate(category = "Classical"))
+    
+plot1 <- 
+  total %>% ggplot(aes(x = category, y = key)) +
+  geom_boxplot() 
+
+```
+```{r}
+ggplotly(plot1)
+```
 
 
-## Including Plots
-
+***
 I have been looking at different features that I wanted to visualize. However, I am not jet satisfied with the results. The plan was to compare two different songs where I wanted to look at the differences in timbre and beats. I have not yet succeeded to make a visualization of it. 
 
 So for now, I have compared the two playlists (insead of songs). 
 Below you can see a boxplot. It shows the range of the keys in the two categories. You can see that there is a big overlap of keys used by classical music and pop music.
 
-![an image caption Source: Boxplot of 2 categories, classical music and pop music. representing the keys used for the tracks.](/Users/tessa/Documents/Kunstmatige intelligentie 3/musicology/portfolio/boxplot key.png)
+    - adjust scale of plot
+    - remove code box above plot
 
-I don't think this is a very interesting plot for my research question, but like I said, I was unable to visualize the data I had in mind. For the next time, the expectation is that with some help I will be able to analyse features of a single song instead of a hole playlist. 
+### Second Visualization
+```{r include=FALSE}
+#kijken naar timbre
+# All by myself van Celine Dion
+celine <-
+  get_tidy_audio_analysis("0gsl92EMIScPGV1AU35nuD") %>%
+  compmus_align(bars, segments) %>% 
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"
+      )
+  )
+
+#Rachmaninov – Piano Concerto No.2 in C minor
+piano <-
+  get_tidy_audio_analysis("3Q6o2IvSohjJkMgGdKqEbE") %>%
+  compmus_align(bars, segments) %>% 
+  select(bars) %>%
+  unnest(bars) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"
+      )
+  )
+
+total <-
+  bind_rows(
+    celine %>% mutate(category = "Celine Dion - All by myself"),
+    piano %>% mutate(category = "Rachmaninov – Piano Concerto No.2 in C minor")
+  )
+
+
+plot2 <- 
+  total %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = basis,
+      y = value,
+      fill = category
+    )
+  ) +
+  geom_boxplot(position='dodge') +
+  labs(x = "Spotify Timbre Coefficients", y = NULL) +
+  theme_classic() 
+```
+
+```{r}
+plot2 %>%
+  ggplotly() %>%
+  layout(boxmode = "group")
+```
+
+***
+The song All by myself from Celine Dion is based on  Rachmaninov’s most famous piano concert. 
+In this visualization, we look at timbre information to see if songs could be using different types of sounds.
+
+There are twelve Spotify timbre coefficients. From all coefficients, a mean per coefficient for each song can be calculated. 
+
+As seen here, when those means are visualized with a boxplot, the distribution of timbre coefficient values overall isn’t that different, especially for the middle timbre coefficients. However, coefficients 1, 2, and 11 show differences.
+(explain what this means)
+
+    - adjust scale of plot
+    - remove code box above plot
+
+### Conclusion 
+
+Still working on the conclusion
