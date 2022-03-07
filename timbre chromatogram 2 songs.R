@@ -9,8 +9,8 @@ library(compmus)
 
 #kijken naar timbre
 # All by myself van Celine Dion
-celine <-
-  get_tidy_audio_analysis("0gsl92EMIScPGV1AU35nuD") %>%
+Eric <-
+  get_tidy_audio_analysis("0AQqrtK1pULuwZUXhwaaDz") %>%
   compmus_align(bars, segments) %>% 
   select(bars) %>%
   unnest(bars) %>%
@@ -38,7 +38,7 @@ piano <-
 
 total <-
   bind_rows(
-    celine %>% mutate(category = "Celine Dion - All by myself"),
+    celine %>% mutate(category = "Eric Carmen - All by myself"),
     piano %>% mutate(category = "Rachmaninov – Piano Concerto No.2 in C minor")
   )
 

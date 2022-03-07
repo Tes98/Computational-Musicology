@@ -7,14 +7,20 @@ library(heatmaply)
 library(spotifyr)
 library(compmus)
 
-lady_gaga <-
-  get_tidy_audio_analysis("1HHeOs6zRdF8Ck58easiAY") %>%
+u2 <-
+  get_tidy_audio_analysis("1Og8U5KRel9D51h4bmznlE") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+pachelbel <-
+  get_tidy_audio_analysis("1c3GkbZBnyrQ1cm4TGHFrK") %>%
   select(segments) %>%
   unnest(segments) %>%
   select(start, duration, pitches)
 
 
-lady_gaga %>%
+u2 %>%
   mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
   compmus_gather_chroma() %>% 
   ggplot(
@@ -31,14 +37,7 @@ lady_gaga %>%
   scale_fill_viridis_c()
 
 
-monti <-
-  get_tidy_audio_analysis("6lo128WdLt7xP5Ejvsq1ym") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-
-monti %>%
+pachelbel %>%
   mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
   compmus_gather_chroma() %>% 
   ggplot(

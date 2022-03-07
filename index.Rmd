@@ -1,15 +1,15 @@
 ---
-title: "Classicle aspects of pop music"
+title: "A comparison of motivation playlists"
 author: "Tessa Vermeulen"
 date: 'February 2022'
 output:
   flexdashboard::flex_dashboard:
     storyboard: true
     theme: cerulean
+    self_contained: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup}
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
@@ -22,120 +22,113 @@ library(compmus)
 
 ```
 
+### Self-similarity matrix of Shivers from Ed Sheeran (timbre)
 
+```{r self-sim}
+shivers <-
+  get_tidy_audio_analysis("50nfwKoDiSYg8zOCREWAm5") %>% # Change URI.
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+ed_sheeran <- 
+  shivers %>%
+    compmus_self_similarity(timbre, "euclidean") %>% 
+    ggplot(
+      aes(
+        x = xstart + xduration / 2,
+        width = xduration,
+        y = ystart + yduration / 2,
+        height = yduration,
+        fill = d
+      )
+    ) +
+    geom_tile() +
+    coord_fixed() +
+    scale_fill_viridis_c(guide = "none") +
+    theme_classic() +
+    labs(x = "", y = "")
+
+
+ggplotly(ed_sheeran)
+
+```
+
+***
+The song Shivers from Ed Sheeran is one of the songs in my personal playlist. This song falls under the Pop genre. Most pop songs contain an intro, verses, pre-chorus and chorus. 
+With a self-similarity matrix, we can determine which sections of a song more or less have the same timbre, or same overall sound, and which sections are different. 
+When looking closely at the plot, we can see two diagonal lines off the main diagonal. This means that a section of the song has been repeated. In pop songs, this is usually an indication of a repetition of the chorus.
+
+* plot mooier opmaken
+* plot verder analyseren
 
 ### Introduction 
 
-In the course Computational Musicology we have to choose a corpus that allows for a meaningful comparison between musical tracks. I hear more and more that artists are increasingly inspired by classical music, so for this assignment, it seems interesting to me to compare classical music with pop and dance music. The research question I will try to answer in this portfolio is: In what way does classical music express itself in pop and dance music? 
+This corpus compares different motivation playlists that people listen to before a race.
+I have changed the subject of my portfolio so I have to start all over again. 
 
-I will use 2 sorts of playlists:
-One with classical music and one with pop and dance music.
 
-It is said that a lot of pop and dance music is based on classical music. For example, it seems that Blackbird from the Beatles is based on Moonlight Sonata from Beethoven. Or that Memories from Maroon 5 is based on Pachelbel.
+### pitch chromatogram
+```{r pitch_chromatogram}
+# Leas on life andy grammer
+andy_grammer <-
+  get_tidy_audio_analysis("4ufkuONjQMNR2fyXu1bO9w") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
 
-***
-[spotify playlist](<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/4vQc2Q7ERByqmRpFnD4GfI?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>)
+#all I do is win dj Khaled
+dj_khaled <-
+  get_tidy_audio_analysis("12PNcnMsjsZ3eHm62t8hiy") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
 
-### First visualization
-
-```{r include=FALSE}
-pop <- get_playlist_audio_features("","4vQc2Q7ERByqmRpFnD4GfI")
-classical <- get_playlist_audio_features("", "6dIXmgBDBwhp0J6CKKD7Hn")
-
-total <-
+both <- 
   bind_rows(
-    pop %>% mutate(category = "Pop"),
-    classical %>% mutate(category = "Classical"))
-    
-plot1 <- 
-  total %>% ggplot(aes(x = category, y = key)) +
-  geom_boxplot() 
+    andy_grammer %>% mutate(category = "Andy Grammer - Leas on life"),
+    dj_khaled %>% mutate(category = "DJ Khaled - All I do is win")
+  )
 
-```
-```{r}
-ggplotly(plot1)
-```
-
-
-***
-I have been looking at different features that I wanted to visualize. However, I am not jet satisfied with the results. The plan was to compare two different songs where I wanted to look at the differences in timbre and beats. I have not yet succeeded to make a visualization of it. 
-
-So for now, I have compared the two playlists (insead of songs). 
-Below you can see a boxplot. It shows the range of the keys in the two categories. You can see that there is a big overlap of keys used by classical music and pop music.
-
-    - adjust scale of plot
-    - remove code box above plot
-
-### Second Visualization
-```{r include=FALSE}
-#kijken naar timbre
-# All by myself van Celine Dion
-celine <-
-  get_tidy_audio_analysis("0gsl92EMIScPGV1AU35nuD") %>%
-  compmus_align(bars, segments) %>% 
-  select(bars) %>%
-  unnest(bars) %>%
-  mutate(
-    timbre =
-      map(segments,
-          compmus_summarise, timbre,
-          method = "rms", norm = "euclidean"
+pitch <- 
+  both %>%
+    mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+    compmus_gather_chroma() %>% 
+    ggplot(
+      aes(
+        x = start + duration / 2,
+        width = duration,
+        y = pitch_class,
+        fill = value
       )
-  )
-
-#Rachmaninov – Piano Concerto No.2 in C minor
-piano <-
-  get_tidy_audio_analysis("3Q6o2IvSohjJkMgGdKqEbE") %>%
-  compmus_align(bars, segments) %>% 
-  select(bars) %>%
-  unnest(bars) %>%
-  mutate(
-    timbre =
-      map(segments,
-          compmus_summarise, timbre,
-          method = "rms", norm = "euclidean"
-      )
-  )
-
-total <-
-  bind_rows(
-    celine %>% mutate(category = "Celine Dion - All by myself"),
-    piano %>% mutate(category = "Rachmaninov – Piano Concerto No.2 in C minor")
-  )
+    ) +
+    geom_tile() +
+    labs(x = "Time (s)", y = NULL, fill = "angular") +
+    theme_minimal() +
+    facet_wrap(~category)
 
 
-plot2 <- 
-  total %>%
-  compmus_gather_timbre() %>%
-  ggplot(
-    aes(
-      x = basis,
-      y = value,
-      fill = category
-    )
-  ) +
-  geom_boxplot(position='dodge') +
-  labs(x = "Spotify Timbre Coefficients", y = NULL) +
-  theme_classic() 
+
+
+ggplotly(pitch)
+
 ```
 
-```{r}
-plot2 %>%
-  ggplotly() %>%
-  layout(boxmode = "group")
-```
 
-***
-The song All by myself from Celine Dion is based on  Rachmaninov’s most famous piano concert. 
-In this visualization, we look at timbre information to see if songs could be using different types of sounds.
-
-There are twelve Spotify timbre coefficients. From all coefficients, a mean per coefficient for each song can be calculated. 
-
-As seen here, when those means are visualized with a boxplot, the distribution of timbre coefficient values overall isn’t that different, especially for the middle timbre coefficients. However, coefficients 1, 2, and 11 show differences.
-(- explain what this means)
-
-    - adjust scale of plot
-    - remove code box above plot
 
 ### Conclusion 
 
