@@ -321,13 +321,13 @@ For this portfolio, I used several playlists of my teammates. I have subdivided 
 
 **Typical tracks for sprinters:**
 
-* lakdjal
-* lajdjla
+* "Thunderstruck" from AC/DC
+* "Let's do this" from Outskrts
 
 **Typical tracks for long-distance swimmers:**
 
-* asda
-* ;kjakdf
+* "Nothing else matters" from Metallica
+* "Eye of the tiger" from Rocky IV
 
 
 ### pitch chromatogram
@@ -407,7 +407,7 @@ grid.arrange(e, d, ncol=2)
 As the plots show, sprinters listen to music with higher energy, and the songs of long-distance swimmers have higher danceability. One outlier in energy is the song "Nothing else matters" from Metallica. This song is ... lower in energy than them mean of the long-distance playlist. 
 A reason for this could be that people listen to this song because they want to control their nerves before the race and dont want to listen to a very energetic song. Another reason that this song is in this playlist, is that lyrics of the song is also an important factor.
 
-#### What __genres__ are used in both playlists? 
+### What __genres__ are used in both playlists? 
 
 ```{r genres}
 
