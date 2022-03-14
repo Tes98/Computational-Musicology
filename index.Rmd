@@ -405,7 +405,7 @@ grid.arrange(e, d, ncol=2)
 
 ***
 As the plots show, sprinters listen to music with higher energy, and the songs of long-distance swimmers have higher danceability. One outlier in energy is the song "Nothing else matters" from Metallica. This song is ... lower in energy than them mean of the long-distance playlist. 
-A reason for this could be that people listen to this song because they want to control their nerves before the race and dont want to listen to a very energetic song. Another reason that this song is in this playlist, is that lyrics of the song is also an important factor.
+A reason for this could be that people listen to this song because they want to control their nerves before the race and don't want to listen to a very energetic song. Another reason that this song is in this playlist, is that lyrics of the song is also an important factor.
 
 ### What __genres__ are used in both playlists? 
 
@@ -416,6 +416,7 @@ A reason for this could be that people listen to this song because they want to 
 ***
 the main genre of the sprinters playlist is rock
 the main genre of the long-distance playlist is pop 
+I will show the plot next time
 
 ### Conclusion 
 
