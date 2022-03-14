@@ -8,19 +8,16 @@ library(spotifyr)
 library(compmus)
 
 #testing plots
-motivation <- get_playlist_audio_features("","37i9dQZF1DXdxcBWuJkbcy")
-personal <- get_playlist_audio_features("", "6XCAbThTYQGcAXguQYTLJV")
+long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
+sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
 
-pers
 
 total <-
   bind_rows(
-    motivation %>% mutate(category = "Motivation Mix"),
-    personal %>% mutate(category = "Wedstrijd voorbereiding")
+    long_distance %>% mutate(category = "Long Distance swimmers"),
+    sprinters %>% mutate(category = "Sprinters")
   )
 
-total %>% ggplot(aes(x = energy, color = category, fill = category)) +
-  geom_histogram(position = 'dodge', binwidth = 0.1) 
 
 total %>% ggplot(aes(y = energy, color = category)) +
   geom_boxplot()
@@ -28,8 +25,13 @@ total %>% ggplot(aes(y = energy, color = category)) +
 total %>% ggplot(aes(y = danceability, color = category)) +
   geom_boxplot()
 
-total %>% ggplot(aes(y = loudness, color = category)) +
+
+library(scales)
+p <- ggplot(total, aes(category, energy)) + 
   geom_boxplot()
+ggplotly(p, tooltip = c("category"))
+
+
 
 # pitch chromatogram 
 
