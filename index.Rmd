@@ -1,36 +1,123 @@
 ---
-title: "A comparison of motivation playlists"
+title: "Computational Musicology"
 author: "Tessa Vermeulen"
-date: 'February/March 2022'
+date: 'March 2022'
 output:
   flexdashboard::flex_dashboard:
-    storyboard: true
-    theme: cerulean
+    css: styles.css
     self_contained: false
+    orientation: columns
+    theme: cerulean
+    
 ---
 
-```{r setup}
-library(ggplot2)
-library(dplyr)
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, libraries, include=FALSE}
 library(tidyverse)
+library(plyr)
+library(dplyr)
+library(spotifyr)
+library(plotly)
+library(compmus)
+library(lubridate)
+library(ggplot2)
 library(tidymodels)
-library(plotly) # N.B. Requires the Cairo package
 library(protoclust)
 library(heatmaply)
-library(spotifyr)
-library(compmus)
 library(scales)
 library(gridExtra)
 library(grid)
-library(plyr)
-library(cowplot)
+library(readxl)
+library(ggdendro)
+
 
 ```
 
-### __tempo histogram__
-```{r tempo_hist}
-# histogram of tempi 
 
+
+Sprinters vs Long-distance swimmers {data-icon="fa-info-circle"}
+=========================================
+Column {data-width=600}
+------------------------------------
+
+#### Introduction
+Let me introduce myself. My name is Tessa, and I am a professional athlete. I swim in the national team and have won several national and international medals. 
+
+During competitions I listen to music that inspires and motivates me. So, for me and a lot of my team mates, music plays an important role in the optimal race preperation. 
+
+In swimming there are different diciplines. More specificly there are sprinters, and long-distance swimmers. Sprinters exert maximum effort for a short period of time, often no longer than 30 seconds. A long-distance swimmer does not have to be so explosive, and the exertion of their race usually lasts more than two minutes. 
+
+Of course not all swimmers lissten to music during their preperantion, but in my experience there are both sprinters and long-distance swimmers who have special playlists for competitions. 
+
+
+#### Research question
+
+Since sprinters and long distance differ so much from each other in terms of performances, the research question I will try to answer in this portfolio is: 
+
+**What are the differences between the motivation playlists of sprinters and long-distance swimmers?**
+
+First we look at the track level Spotify features of both playlists. Are there for example differences in energy, or tempo? I expect that the sprinter playlist contains more songs with higher energy and tempo. 
+
+#### Playlists 
+
+For this portfolio, I used several playlists of my teammates. I have subdivided these playlists in two groups, namely a playlist with tracks that sprinters listen to and one that long-distance swimmers listen to. 
+
+**Typical tracks for sprinters:**
+
+* "Thunderstruck" from AC/DC
+* "Let's do this" from Outskrts
+
+**Typical tracks for long-distance swimmers:**
+
+* "Nothing else matters" from Metallica
+* "Eye of the tiger" from Rocky IV
+
+
+Column {data-width=400}
+------------------------------------
+test 
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/0Wik64zBKFTNoNjTpG70OH?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+
+Analysis {.storyboard data-icon="fa-chart-bar"}
+============================================
+
+### First lets look at the __genres__ of each playlist
+
+```{r, genres, echo=FALSE}
+df_long = read_excel('genre_count_long.xlsx')
+df_sprint = read_excel('genre_count_sprint.xlsx')
+
+both_genres <-
+  bind_rows(
+    df_long %>% mutate(category = "Long-distance playlist"),
+    df_sprint %>% mutate(category = "Sprinters playlist")
+  )
+
+genre_histogram <- both_genres %>%
+  ggplot(aes(x=Count, y = Genre)) +
+  geom_col(fill="#295590", alpha=0.75) +
+  geom_text(aes(label = Percentage)) +
+  xlim(0,30) +
+  theme_classic() +
+  facet_wrap(~category)
+  
+
+ggplotly(genre_histogram)
+```
+***
+#### Main genres
+As you can see, there is a clear difference between the two playlists. The long-distance playlist contains mostly pop songs, unlike the sprinters playlist, which mainly consists of rock songs.
+
+This could be an interesting feature that we will further explore in the next sections. 
+
+
+### Changes in __energy__ and __danceability__ point out the differences between sprinters and long-distance swimmers
+```{r, energy, echo=FALSE}
 long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
 sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
 
@@ -41,148 +128,42 @@ total <-
     sprinters %>% mutate(Category = "Sprinters playlist")
   )
 
+e <- ggplot(total, aes(Category, energy)) + 
+  geom_boxplot()
 
-mu <- ddply(total, "Category", summarise, grp.mean=mean(tempo))
+#ggplotly(e, tooltip = c("category"))
 
-tempi_hist <- total %>%
-  ggplot(aes(x=tempo, color=Category, fill=Category)) +
-  geom_histogram(position="dodge", alpha=0.5, binwidth = 15) + 
-  geom_vline(data=mu, aes(xintercept=grp.mean, color=Category),
-             linetype="dashed") +
-  labs(title="Tempo histogram",x="Tempo(BPM)", y = "Count") +
-  theme_classic()
+d <- ggplot(total, aes(Category, danceability)) + 
+  geom_boxplot()
+#ggplotly(d, tooltip = c("category"))
 
-ggplotly((tempi_hist))
-```
-***
-The tempo histogram compares the tempi of the two playlists. The plot shows that the mean tempo of the sprinters playlist is 139.6 BPM and the mean tempo of the long-distance playlist is 122.5 BPM. Furthermore, we can see that the long-distance playlist mostly contains songs that have a BPM of 120. 
-
-
-### __tempogram__ of two songs: Heart-Shaped Box from Nirvana and Remember the name from Fort Minor
-
-#### Heart-Shaped Box
-```{r tempogram1}
-nirvana <- get_tidy_audio_analysis("11LmqTE2naFULdEP94AUBa")
-styles <- get_tidy_audio_analysis("6ndmKwWqMozN2tcZqzCX4K")
-
-b <- 
-  bind_rows(
-  nirvana %>% mutate(Category = "Heart-Shaped Box"),
-  styles %>% mutate(Category = "Remember the Name (feat. Styles of Beyond)")
-)
-
-highest_tempo <- nirvana %>%
-  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic() 
-
-ggplotly(highest_tempo)
-
-```
-#### Remember the Name
-
-```{r tempogram2}
-#tempogram of Remember the Name (feat. Styles of Beyond)
-# long distance track with lowest tempo
-
-low_tempo <- styles %>%
-  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
-  ggplot(aes(x = time, y = bpm, fill = power)) +
-  geom_raster() +
-  scale_fill_viridis_c(guide = "none") +
-  labs(x = "Time (s)", y = "Tempo (BPM)") +
-  theme_classic() 
-  
-ggplotly(low_tempo)
+grid.arrange(e, d, ncol=2)
+#ggplotly(plot)
 
 ```
 
 ***
-Tempo can vary locally within a piece. A tempogram is a feature matrix which indicates the prevalence of certain tempi at each moment in time. In this section, I have made two temopgrams. One of the song with the lowest tempo and one with the highest tempo. The song with the lowest tempo came from the long-distance playlist, this is the song Remember the Name (feat. Styles of Beyond). The song with the highest tempo, Heart-Shaped Box from nirvana, came from the sprinters playlist. 
-
-Still find it difficult to interpret these plots, so a proper explanation follows. 
-
-### Long-distance and sprinters playlists compared using the __tempo__ feature with standard deviation and mean
-
-```{r sd}
-long_dist <-
-  get_playlist_audio_features(
-    "thesoundsofspotify",
-    "56vEaKq9VqFBlqtcXZAgn4"
-  ) %>%
-  slice(1:30) %>%
-  add_audio_analysis()
-sprinters <-
-  get_playlist_audio_features(
-    "thesoundsofspotify",
-    "70wUKUusJoxhLNieGGRXpK"
-  ) %>%
-  slice(1:30) %>%
-  add_audio_analysis()
-jazz <-
-  long_dist %>%
-  mutate(genre = "Long-Distance") %>%
-  bind_rows(sprinters %>% mutate(genre = "Sprinters"))
-
-
-jazz %>%
-  mutate(
-    sections =
-      map(
-        sections,                                    # sections or segments
-        summarise_at,
-        vars(tempo, loudness, duration),             # features of interest
-        list(section_mean = mean, section_sd = sd)   # aggregation functions
-      )
-  ) %>%
-  unnest(sections) %>%
-  ggplot(
-    aes(
-      x = tempo,
-      y = tempo_section_sd,
-      colour = genre,
-      alpha = loudness
-    )
-  ) +
-  geom_point(aes(size = duration / 60)) +
-  geom_rug() +
-  theme_minimal() +
-  ylim(0, 5) +
-  labs(
-    x = "Mean Tempo (bpm)",
-    y = "SD Tempo",
-    colour = "Playlist",
-    size = "Duration (min)",
-    alpha = "Volume (dBFS)"
-  )
-
-```
-
-***
-Looking at the plot, we can see that in general, the tempo of the songs in the sprinters playlist are higher. 
-For now it is a bit difficult to see, but I also would like to say something about the volume. It looks like the volume of the sprinters playlist is higher for most songs, but I think it is better if I showed a little table with the mean volume of both playlists. 
+As the plots show, sprinters listen to music with higher energy, and the songs of long-distance swimmers have higher danceability. One outlier in energy is the song "Nothing else matters" from Metallica. This song is ... lower in energy than them mean of the long-distance playlist. 
+A reason for this could be that people listen to this song because they want to control their nerves before the race and don't want to listen to a very energetic song. Another reason that this song is in this playlist, is that lyrics of the song is also an important factor.
 
 ### Can we say something about the __keys__ of the different playlists?
 
-#### Key histogram
-
-```{r key_hist}
+```{r, key_hist, echo=FALSE}
 long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
 sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
 
 
 total <-
   bind_rows(
-    long_distance %>% mutate(category = "Long Distance swimmers"),
-    sprinters %>% mutate(category = "Sprinters")
+    long_distance %>% mutate(category = "Long-distance playlist"),
+    sprinters %>% mutate(category = "Sprinters playlist")
   )
 
 key_histogram <- total %>%
   ggplot(aes(x=key, fill=category)) +
-  geom_histogram(position = 'dodge', binwidth = 0.55) +
+  geom_bar(position = 'dodge', binwidth = 0.55) +
+  labs(title = "Key histogram") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none") +
   theme_classic()
 
 ggplotly(key_histogram)
@@ -191,11 +172,9 @@ ggplotly(key_histogram)
 *** 
 The histogram of the keys shows what keys are used in the different playlists. As we can see, the majority of the tracks of the sprinters playlist ar in key 1 (C#/Db). This corresponds to the fact that the sprinters playlist mainly contains rock songs. For the long distance playlist, the distribution is more spread out. 
 
-Furthermore, the sprinter playlist does not have any tracks that are in key 7 (G), and the Long-Distance playlist does not have tracks in key 11 (B)
 
-#### Keygram of the song "Nothing else matters"
-
-```{r keygram}
+### Diving deeper into "Nothing else matters": a __keygram__
+```{r, keygram, echo=FALSE}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
 }
@@ -308,7 +287,7 @@ nothing_else_matters %>%
   ) +
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
+  theme_classic() +
   labs(x = "Time (s)", y = "")
 
 ```
@@ -319,186 +298,219 @@ A keygram of a song compares  the keys of a song to a particular key template, t
 
 So at the beginning of the song, and towards the end, there are no good matches. However, around time 100s we can see a very dark color for the E:min chord, so chances are that this chord matches the template at this time in the song. 
 
-Notes: 
-- ik wil graag de uitleg naast de plots ipv eronder
+The song is in e minor 
 
-### Self-similarity matrix of Shivers from Ed Sheeran (timbre)
 
-```{r self-sim}
-shivers <-
-  get_tidy_audio_analysis("50nfwKoDiSYg8zOCREWAm5") %>% # Change URI.
-  compmus_align(bars, segments) %>%                     # Change `bars`
-  select(bars) %>%                                      #   in all three
-  unnest(bars) %>%                                      #   of these lines.
+
+
+Classification {.storyboard data-icon="fa-chart-bar"}
+============================================
+
+### An important aspect of classification is __feature selection__. So lets have a look at what features are most important. 
+
+```{r, features, echo=FALSE}
+
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit %>% 
+    collect_predictions() %>% 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+
+get_pr <- function(fit) {
+  fit %>% 
+    conf_mat_resampled() %>% 
+    group_by(Prediction) %>% mutate(precision = Freq / sum(Freq)) %>% 
+    group_by(Truth) %>% mutate(recall = Freq / sum(Freq)) %>% 
+    ungroup() %>% filter(Prediction == Truth) %>% 
+    select(class = Prediction, precision, recall)
+}  
+
+
+sprint <- get_playlist_audio_features("spotify", "70wUKUusJoxhLNieGGRXpK")
+ld <- get_playlist_audio_features("spotify", "56vEaKq9VqFBlqtcXZAgn4")
+wedstrijd <-
+  bind_rows(
+    sprint %>% mutate(playlist = "Sprinters playlist"),
+    ld %>% mutate(playlist = "Long-distance playlist")
+  ) 
+
+wedstrijd_features <-
+  wedstrijd %>%  # For your portfolio, change this to the name of your corpus.
+  add_audio_analysis() %>% 
   mutate(
+    playlist = factor(playlist),
+    segments = map2(segments, key, compmus_c_transpose),
     pitches =
-      map(segments,
-          compmus_summarise, pitches,
-          method = "rms", norm = "euclidean"              # Change summary & norm.
+      map(
+        segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean",
       )
   ) %>%
-  mutate(
-    timbre =
-      map(segments,
-          compmus_summarise, timbre,
-          method = "rms", norm = "euclidean"              # Change summary & norm.
-      )
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+
+
+wedstrijd_recipe <-
+  recipe(
+    playlist ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 +
+      c02 +
+      c03 +
+      c04 + c05 + 
+      c06 +
+      c07 + 
+      c08 + 
+      c09 + c10 + 
+      c11 + 
+      c12,
+    data = wedstrijd_features,          # Use the same name as the previous block.
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())      # Converts to z-scores.
+# step_range(all_predictors())    # Sets range to [0, 1].
+
+
+wedstrijd_cv <- wedstrijd_features %>% vfold_cv(5)
+
+forest_model <-
+  rand_forest() %>%
+  set_mode("classification") %>% 
+  set_engine("ranger", importance = "impurity")
+wedstrijd_forest <- 
+  workflow() %>% 
+  add_recipe(wedstrijd_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit_resamples(
+    wedstrijd_cv, 
+    control = control_resamples(save_pred = TRUE)
   )
 
-ed_sheeran <- 
-  shivers %>%
-    compmus_self_similarity(timbre, "euclidean") %>% 
-    ggplot(
-      aes(
-        x = xstart + xduration / 2,
-        width = xduration,
-        y = ystart + yduration / 2,
-        height = yduration,
-        fill = d
-      )
-    ) +
-    geom_tile() +
-    coord_fixed() +
-    scale_fill_viridis_c(guide = "none") +
-    theme_classic() +
-    labs(x = "", y = "")
+
+workflow() %>% 
+  add_recipe(wedstrijd_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit(wedstrijd_features) %>% 
+  pluck("fit", "fit", "fit") %>%
+  ranger::importance() %>% 
+  enframe() %>% 
+  mutate(name = fct_reorder(name, value)) %>% 
+  ggplot(aes(name, value)) + 
+  geom_col() + 
+  coord_flip() +
+  theme_minimal() +
+  labs(x = NULL, y = "Importance")
 
 
-ggplotly(ed_sheeran)
+```
 
+*** 
+
+If we look at the plot, we can see that _energy_,  _danceability_ and the _second timbre coefficient_ are the most important features. This corresponds to our first expectations. In the analysis of the different spotify features, we could see that there was a big difference in energy and danceability between the two playlists. Duration and liveness are the least important features. 
+
+
+### Now we use random forest to make classifications. During training and testing, all features are initially included. 
+
+
+```{r, random_forest, echo=FALSE}
+wedstrijd_forest %>% get_conf_mat() %>% autoplot(type = "heatmap")
+wedstrijd_forest %>% get_pr()
+
+```
+
+*** 
+
+Classification with random forest gives a precision of ... on the sprinters playlist, and .... precision on the long-distance playlist. If we look at the heatmap, we can see that ... of the songs in the sprinters playlist were not correctly classified as a song from the long-distance playlist. ... songs were not correctly classified from the long-distance playlist. 
+Looking at which songs were not correctly classified might help us get a clearer view of why this was the case. 
+- to do: taking a closer look at the songs.
+
+
+### Can we improve our model? We now use the top 6 most important features for classification. 
+
+```{r, random_features, echo=FALSE}
+wedstrijd_recipe <-
+  recipe(
+    playlist ~
+      danceability +
+      energy +
+      acousticness +
+      tempo +
+      c02 +
+      c06 +
+      c11, 
+    data = wedstrijd_features,          # Use the same name as the previous block.
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors())      # Converts to z-scores.
+# step_range(all_predictors())    # Sets range to [0, 1].
+
+
+wedstrijd_cv <- wedstrijd_features %>% vfold_cv(5)
+
+
+forest_model <-
+  rand_forest() %>%
+  set_mode("classification") %>% 
+  set_engine("ranger", importance = "impurity")
+wedstrijd_forest <- 
+  workflow() %>% 
+  add_recipe(wedstrijd_recipe) %>% 
+  add_model(forest_model) %>% 
+  fit_resamples(
+    wedstrijd_cv, 
+    control = control_resamples(save_pred = TRUE)
+  )
+
+wedstrijd_forest %>% get_conf_mat() %>% autoplot(type = "heatmap")
+
+```
+```{r}
+wedstrijd_forest %>% get_pr()
 ```
 
 ***
-The song Shivers from Ed Sheeran is one of the songs in my personal playlist. This song falls under the Pop genre. Most pop songs contain an intro, verses, pre-chorus and chorus. 
-With a self-similarity matrix, we can determine which sections of a song more or less have the same timbre, or same overall sound, and which sections are different. 
-When looking closely at the plot, we can see two diagonal lines off the main diagonal. This means that a section of the song has been repeated. In pop songs, this is usually an indication of a repetition of the chorus.
 
-* plot mooier opmaken
-* plot verder analyseren
-
-### Sprinters vs Long-distance swimmers 
-
-#### Introduction
-Let me introduce myself. My name is Tessa, and I am a professional athlete. I swim in the national team and have won several national and international medals. 
-
-During competitions I listen to music that inspires and motivates me. So, for me and a lot of my team mates, music plays an important role in the optimal race preperation. 
-
-In swimming there are different diciplines. More specificly there are sprinters, and long-distance swimmers. Sprinters exert maximum effort for a short period of time, often no longer than 30 seconds. A long-distance swimmer does not have to be so explosive, and the exertion of their race usually lasts more than two minutes. 
-
-Of course not all swimmers lissten to music during their preperantion, but in my experience there are both sprinters and long-distance swimmers who have special playlists for competitions. 
+After feature selection, the model did not improve significantly. Now the precision of the sprinters playlist is 0.83 and the precision of the long-distance playlist is 0.85. 
+- to do: beter uitleggen hoe dit kan 
+- nog verder proberen te verbeteren. 
 
 
-#### Research question
 
-Since sprinters and long distance differ so much from each other in terms of performances, the research question I will try to answer in this portfolio is: 
+Conclusion {data-icon="fa-info-circle"}
+=========================================
 
-**What are the differences between the motivation playlists of sprinters and long-distance swimmers?**
-
-First we look at the track level Spotify features of both playlists. Are there for example differences in energy, or tempo? I expect that the sprinter playlist contains more songs with higher energy and tempo. 
-
-#### Playlists 
-
-For this portfolio, I used several playlists of my teammates. I have subdivided these playlists in two groups, namely a playlist with tracks that sprinters listen to and one that long-distance swimmers listen to. 
-
-**Typical tracks for sprinters:**
-
-* "Thunderstruck" from AC/DC
-* "Let's do this" from Outskrts
-
-**Typical tracks for long-distance swimmers:**
-
-* "Nothing else matters" from Metallica
-* "Eye of the tiger" from Rocky IV
-
-
-### pitch chromatogram
-```{r pitch_chromatogram}
-# Leas on life andy grammer
-andy_grammer <-
-  get_tidy_audio_analysis("4ufkuONjQMNR2fyXu1bO9w") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-#all I do is win dj Khaled
-dj_khaled <-
-  get_tidy_audio_analysis("12PNcnMsjsZ3eHm62t8hiy") %>%
-  select(segments) %>%
-  unnest(segments) %>%
-  select(start, duration, pitches)
-
-both <- 
-  bind_rows(
-    andy_grammer %>% mutate(category = "Andy Grammer - Leas on life"),
-    dj_khaled %>% mutate(category = "DJ Khaled - All I do is win")
-  )
-
-pitch <- 
-  both %>%
-    mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-    compmus_gather_chroma() %>% 
-    ggplot(
-      aes(
-        x = start + duration / 2,
-        width = duration,
-        y = pitch_class,
-        fill = value
-      )
-    ) +
-    geom_tile() +
-    labs(x = "Time (s)", y = NULL, fill = "angular") +
-    theme_minimal() +
-    facet_wrap(~category)
+still working on conclusion 
+- to do: plots en precision recall mooi weergeven
+- alle overige plots in de analyse zetten
+- overal een goede uitleg geven 
 
 
 
 
-ggplotly(pitch)
-
-```
-
-### Changes in __energy__ and __danceability__ point out the differences between sprinters and long-distance swimmers
-
-```{r energy}
-long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
-sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
 
 
-total <-
-  bind_rows(
-    long_distance %>% mutate(category = "Long Distance swimmers"),
-    sprinters %>% mutate(category = "Sprinters")
-  )
 
-e <- ggplot(total, aes(category, energy)) + 
-  geom_boxplot()
 
-#ggplotly(e, tooltip = c("category"))
 
-d <- ggplot(total, aes(category, danceability)) + 
-  geom_boxplot()
-#ggplotly(d, tooltip = c("category"))
 
-grid.arrange(e, d, ncol=2)
-#ggplotly(plot)
-
-```
-
-***
-As the plots show, sprinters listen to music with higher energy, and the songs of long-distance swimmers have higher danceability. One outlier in energy is the song "Nothing else matters" from Metallica. This song is ... lower in energy than them mean of the long-distance playlist. 
-A reason for this could be that people listen to this song because they want to control their nerves before the race and don't want to listen to a very energetic song. Another reason that this song is in this playlist, is that lyrics of the song is also an important factor.
-
-### What __genres__ are used in both playlists? 
-
-```{r genres}
-
-```
-
-***
-the main genre of the sprinters playlist is rock
-the main genre of the long-distance playlist is pop 
-I will show the plot next time
-
-### Conclusion 
-
-Still working on the conclusion 
