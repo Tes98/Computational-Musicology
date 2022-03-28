@@ -40,7 +40,7 @@ library(ggdendro)
 
 Sprinters vs Long-distance swimmers {data-icon="fa-info-circle"}
 =========================================
-Column {data-width=600}
+Column {data-width=750}
 ------------------------------------
 
 #### Introduction
@@ -76,11 +76,15 @@ For this portfolio, I used several playlists of my teammates. I have subdivided 
 * "Eye of the tiger" from Rocky IV
 
 
-Column {data-width=400}
+Column {data-width=250}
 ------------------------------------
-test 
 
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/0Wik64zBKFTNoNjTpG70OH?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/56vEaKq9VqFBlqtcXZAgn4?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/70wUKUusJoxhLNieGGRXpK?utm_source=generator" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
 
 
 Analysis {.storyboard data-icon="fa-chart-bar"}
