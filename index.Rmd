@@ -380,11 +380,11 @@ pitch_plot <- bzt %>%
   theme_classic() +
   labs(title = 'Pitch', x = "Pitch", y = "")
 
-timbre_plot + theme(axis.title.x.top = element_text())
-pitch_plot + theme(axis.title.x.top = element_text())
+p1 <- timbre_plot + theme(axis.title.x.top = element_text())
+p2 <- pitch_plot + theme(axis.title.x.top = element_text())
 
 
-fig <- subplot(pitch_plot, timbre_plot, nrows=1, titleY=TRUE, titleX=TRUE, margin = 0.05) %>%
+fig <- subplot(p2, p1, nrows=1, titleY=TRUE, titleX=TRUE, margin = 0.05) %>%
   layout(title = "Self-Similarity Matrices")
 fig
 
