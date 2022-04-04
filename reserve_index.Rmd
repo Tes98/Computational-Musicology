@@ -374,7 +374,7 @@ For this portfolio, I used several playlists of my teammates. I have subdivided 
 
 
 
-### pitch chromatogram
+### pitch chromagram
 ```{r pitch_chromatogram}
 # Leas on life andy grammer
 andy_grammer <-
@@ -465,3 +465,30 @@ I will show the plot next time
 ### Conclusion 
 
 Still working on the conclusion 
+
+
+### And what about the __keys__? We know the main genres of both playlists. 
+
+```{r, key_hist, echo=FALSE}
+long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
+sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
+
+
+total <-
+  bind_rows(
+    long_distance %>% mutate(category = "Long-distance playlist"),
+    sprinters %>% mutate(category = "Sprinters playlist")
+  )
+
+key_histogram <- total %>%
+  ggplot(aes(x=key, fill=category)) +
+  geom_bar(position = 'dodge', binwidth = 0.55) +
+  labs(title = "Key histogram") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none") +
+  theme_classic()
+
+ggplotly(key_histogram)
+```
+
+*** 
+to Do 

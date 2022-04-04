@@ -6,6 +6,12 @@ library(protoclust)
 library(heatmaply)
 library(spotifyr)
 library(compmus)
+library(scales)
+library(gridExtra)
+library(grid)
+library(readxl)
+library(ggdendro)
+
 
 #testing plots
 long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
@@ -110,3 +116,43 @@ shivers %>%
   scale_fill_viridis_c(guide="none") +
   theme_classic() +
   labs(x = "", y = "")
+
+
+
+
+
+#energy/dance  boxplot
+
+long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
+sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
+
+
+total <-
+  bind_rows(
+    long_distance %>% mutate(Category = "Long-distance playlist"),
+    sprinters %>% mutate(Category = "Sprinters playlist")
+  )
+
+e <- ggplot(total, aes(Category, energy)) + 
+  geom_boxplot(aes(fill=Category)) +
+  labs(title="Boxplot Energy",x="", y = "Energy") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none")
+
+#ggplotly(e, tooltip = c("category"))
+
+d <- ggplot(total, aes(Category, danceability)) + 
+  geom_boxplot(aes(fill=Category)) +
+  labs(title="Boxplot Danceability",x="", y = "Danceability") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none")
+#ggplotly(d, tooltip = c("category"))
+
+grid.arrange(e, d, ncol=2)
+plot1 <- ggplotly(e) %>%
+  layout(xaxis = list(title = ''), yaxis = list(title = 'Energy'))
+plot2 <- ggplotly(d) %>%
+  layout(xaxis = list(title = ''), yaxis = list(title = 'Danceability'))
+
+fig <- subplot(plot1, plot2, nrows=1, titleY=TRUE, titleX=TRUE, margin = 0.075) %>%
+  layout(title = "Boxplot Energy and Danceability")
+
+fig

@@ -32,7 +32,7 @@ library(gridExtra)
 library(grid)
 library(readxl)
 library(ggdendro)
-
+library(cowplot)
 
 ```
 
@@ -117,7 +117,9 @@ ggplotly(genre_histogram)
 #### Main genres
 As you can see, there is a clear difference between the two playlists. The long-distance playlist contains mostly pop songs, unlike the sprinters playlist, which mainly consists of rock songs.
 
-This could be an interesting feature that we will further explore in the next sections. 
+Pop music is a genre that is often regarded as a softer alternative to rock. Pop involves more singing and vocal expression, with a danceable beat to it. Rock on the other hand is played on loud sounds of instruments and is high in energy. 
+
+In the following tabs of the analysis, we will dive deeper into the different playlist. Are there indeed noticeable differences in energy or danceability for example? Furthermore, we will explore individual songs that stand out in the data. 
 
 
 ### Changes in __energy__ and __danceability__ point out the differences between sprinters and long-distance swimmers
@@ -133,49 +135,270 @@ total <-
   )
 
 e <- ggplot(total, aes(Category, energy)) + 
-  geom_boxplot()
+  geom_boxplot(aes(fill=Category)) +
+  labs(title="Boxplot Energy",x="", y = "Energy") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none")
 
 #ggplotly(e, tooltip = c("category"))
 
 d <- ggplot(total, aes(Category, danceability)) + 
-  geom_boxplot()
+  geom_boxplot(aes(fill=Category)) +
+  labs(title="Boxplot Danceability",x="", y = "Danceability") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none")
 #ggplotly(d, tooltip = c("category"))
 
-grid.arrange(e, d, ncol=2)
-#ggplotly(plot)
+plot1 <- ggplotly(e) %>%
+  layout(xaxis = list(title = ''), yaxis = list(title = 'Energy'))
+plot2 <- ggplotly(d) %>%
+  layout(xaxis = list(title = ''), yaxis = list(title = 'Danceability'))
+
+fig <- subplot(plot1, plot2, nrows=1, titleY=TRUE, titleX=TRUE, margin = 0.075) %>%
+  layout(title = "Boxplot Energy and Danceability")
+
+fig
 
 ```
 
 ***
-As the plots show, sprinters listen to music with higher energy, and the songs of long-distance swimmers have higher danceability. One outlier in energy is the song "Nothing else matters" from Metallica. This song is ... lower in energy than them mean of the long-distance playlist. 
-A reason for this could be that people listen to this song because they want to control their nerves before the race and don't want to listen to a very energetic song. Another reason that this song is in this playlist, is that lyrics of the song is also an important factor.
+As the plots show, sprinters listen to music with higher energy, and the songs of long-distance swimmers have higher danceability. 
 
-### Can we say something about the __keys__ of the different playlists?
+One outlier in energy is the song "Nothing else matters" from Metallica. This song is 0.41 lower in energy than the median of the long-distance playlist. 
+The expectation was that mostly high energy songs are played before the race. So why is this particular song, with relatively low energy, still in the long distance playlist? 
+One explanation could be that people listen to this song because they want to control their nerves before the race and don't want to listen to a very energetic song. 
+The lyrics of the song could also play an important role. The song "Nothing else matters", is about being honest with your feelings and expressing them. Putting yourself out there and take a risk. I can imagine that one could get more confidence from this song. 
 
-```{r, key_hist, echo=FALSE}
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/0nLiqZ6A27jJri2VCalIUs?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+Danceability describes how suitable a song is for dancing. This is based on a combination of different musical elements, including temo, rithmstability and beat strength. If a track has 0 danceability, it is least danceable, and a danceability of 1.0 means it is most danceable. The median of the long-distance playlist is 0.70, which is higher than the median of 0,51 from the sprinters playlist. 
+
+In the sprinters playlist, there is one outlier. The track "Moth Into Flame" from Metallica has a very low danceability of 0.16. On the other hand, the track has a very high energy of 0.98. Listening to the song makes me understand why a sprinter would listen to it right before a race. During a race, sprinters have a relatively high arm frequency (number of strokes you make per minute). Therefore, a track that is high in energy and tempo could help to get into the right state of mind. 
+
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/album/7LwifLL1anaEd9eIIfIkx7?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+
+### Lets look at the __tempo__. Do sprinters listen to tracks with a higher tempo?
+
+```{r tempo_hist, echo=FALSE}
+# histogram of tempi 
+
 long_distance <- get_playlist_audio_features("","56vEaKq9VqFBlqtcXZAgn4")
 sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
 
 
 total <-
   bind_rows(
-    long_distance %>% mutate(category = "Long-distance playlist"),
-    sprinters %>% mutate(category = "Sprinters playlist")
+    long_distance %>% mutate(Playlist = "Long-distance playlist"),
+    sprinters %>% mutate(Playlist = "Sprinters playlist")
   )
 
-key_histogram <- total %>%
-  ggplot(aes(x=key, fill=category)) +
-  geom_bar(position = 'dodge', binwidth = 0.55) +
-  labs(title = "Key histogram") +
+
+mu <- ddply(total, "Playlist", summarise, grp.mean=mean(tempo))
+
+tempi_hist <- total %>%
+  ggplot(aes(x=tempo, fill=Playlist)) +
+  geom_histogram(position="dodge", alpha=0.8, binwidth = 15) + 
+  geom_vline(data=mu, aes(xintercept=grp.mean), colour = c("#93B9D0", "#295590"),
+             linetype="dashed") +
+  labs(title="Tempo histogram",x="Tempo(BPM)", y = "Count") +
   scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none") +
   theme_classic()
 
-ggplotly(key_histogram)
+ggplotly(tempi_hist)
+```
+
+***
+
+The tempo histogram shows the tempi of the two playlists. We can see that the mean tempo of the sprinters playlist is 138.6 BPM and the mean tempo of the long-distance playlist is 120.9 BPM. That the tempo of the playlist for sprinters is higher than that of the long-distance playlist is in line with our expectations. Given that the two main genres, Rock and Metal, usually have a higher tempo than pop and Hip Hop music: 
+
+| Genre | Tempo (BPM) |
+| ----- | ----------- |
+| Pop   | 100-130     |
+| Rock  | 110-140     |
+| Metal | 100-160     |
+| Hip Hop | 85-115    |
+
+Looking at the histogram, only two tracks from the sprinters playlist have a tempo below 100 BPM. This are the tracks "Basket Case" and "Eyes of a panther". Especially the last one is interesting. According to Spotify, this track has a BPM of 88.6. However, if you listen to it, it doesn't seem to have such a low tempo.
+In the next tab, we will look at a tempogram of this song to figure out what is happening. 
+
+
+### Diving deeper into "Eyes of a panther" from Steel Panther by looking at __tempograms__
+```{r, tempogram, echo=FALSE}
+panther <- get_tidy_audio_analysis("20A08NCQknognYF4i9EyGu")
+lease_on_life <- get_tidy_audio_analysis("4ufkuONjQMNR2fyXu1bO9w")
+
+
+highest_tempo <- panther %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(title="Eyes of a Panther", x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic() 
+
+low_tempo <- lease_on_life %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(title="Lease On Life", x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic() 
+  
+plot_grid(highest_tempo, low_tempo, labels = "")
+
+
 ```
 
 *** 
-The histogram of the keys shows what keys are used in the different playlists. As we can see, the majority of the tracks of the sprinters playlist ar in key 1 (C#/Db). This corresponds to the fact that the sprinters playlist mainly contains rock songs. For the long distance playlist, the distribution is more spread out. 
 
+Tempo is the speed or pace of music. It is usually described in beats per minute (BPM), or how many pulses per minute. A tempogram can be used as an indicator of the local relevance of a specific tempo for a specific track for each time instance. 
+The plots at the left show a Fourier-based tempogram that attempts to use Spotify's API to analyse the tempo of two songs: Eyes of a Panther, and Lease On Life. Overall, Spotify estimates that the tempo of both tracks are 88 BPM. However, when we listen to both songs, they sound very different. 
+When we look at the tempograms of both songs, we can see that there is a bright yellow line around 90 BPM. Nonetheless, there is a difference between the two tempograms. The tempogram of Eyes of a Panther, also has bright yellow spots all over the tempogram, instead of just at 90 BPM. This could indicate that tempo estimation is extremely hard for this song. In contrast to Lease On Life, where the tempogram is mainly dark blue, and only shows a yellow color at 90BPM, which matches the estimated tempo Spotify gave us. 
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4ufkuONjQMNR2fyXu1bO9w?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/68ZY22YJeDxvcpQCg6u6SX?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+
+### If we summarize the __tempo__, __duration__ and __volume__ features, is there a clear difference between the playlists?
+```{r, summary, echo=FALSE}
+long_dist <-
+  get_playlist_audio_features(
+    "thesoundsofspotify",
+    "56vEaKq9VqFBlqtcXZAgn4"
+  ) %>%
+  slice(1:30) %>%
+  add_audio_analysis()
+sprinters <-
+  get_playlist_audio_features(
+    "thesoundsofspotify",
+    "70wUKUusJoxhLNieGGRXpK"
+  ) %>%
+  slice(1:30) %>%
+  add_audio_analysis()
+jazz <-
+  long_dist %>%
+  mutate(Playlist = "Long-distance") %>%
+  bind_rows(sprinters %>% mutate(Playlist = "Sprinters"))
+
+
+jazz %>%
+  mutate(
+    sections =
+      map(
+        sections,                                    # sections or segments
+        summarise_at,
+        vars(tempo, loudness, duration),             # features of interest
+        list(section_mean = mean, section_sd = sd)   # aggregation functions
+      )
+  ) %>%
+  unnest(sections) %>%
+  ggplot(
+    aes(
+      x = tempo,
+      y = tempo_section_sd,
+      colour = Playlist,
+      alpha = loudness
+    )
+  ) +
+  geom_point(aes(size = duration / 60)) +
+  geom_rug() +
+  scale_colour_manual(values = c('#93B9D0', "#293352")) +
+  theme_minimal() +
+  ylim(0, 5) +
+  labs(
+    x = "Mean Tempo (bpm)",
+    y = "SD Tempo",
+    colour = "Playlist",
+    size = "Duration (min)",
+    alpha = "Volume (dBFS)"
+  )
+
+```
+
+***
+Summarizing low level track features like duration, volume and tempo results in the plot on the left. At first it might seem that this plot only shows a lot of points. However, there are some interesting observations to make. 
+
+First, if we look at the size of the points, we can see that the points of the long-distance playlist are a bit larger than the points of the sprinters playlist. This means that in general the duration of the tracks of the long-distance playlist are longer. The longest track of the long-distance playlist 410sec and the shortest track is 158sec. This differs for the sprinters playlist, where the longest track is 350sec and the shortest only 90sec.
+
+Furthermore, comparing the overall volume of the two playlists, both playlists do not seem to differ very much. The average volume of both playlists are almost identical, namely -5.3 dBFS. 
+
+
+### Nothing else matters from Metallica was the track wiht the lowes energy. What was the structure of the song in terms of __chroma__ and __timbre__?
+
+```{r, structure, echo=FALSE}
+bzt <-
+  get_tidy_audio_analysis("0nLiqZ6A27jJri2VCalIUs") %>% # Change URI.
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+timbre_plot <- bzt %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(title = 'Timbre', x = "Timbre", y = "")
+
+
+pitch_plot <- bzt %>%
+  compmus_self_similarity(pitches, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(title = 'Pitch', x = "Pitch", y = "")
+
+timbre_plot + theme(axis.title.x.top = element_text())
+pitch_plot + theme(axis.title.x.top = element_text())
+
+
+fig <- subplot(pitch_plot, timbre_plot, nrows=1, titleY=TRUE, titleX=TRUE, margin = 0.05) %>%
+  layout(title = "Self-Similarity Matrices")
+fig
+
+
+
+```
+
+*** 
+
+The plot on the left shows a self-similarity matrix of pitch, and on the right we can see a self-similarity matrix of timbre. The diagonal line in the middle means that the song is exactly the same at that time, in terms of timbre and pitch. This makes sense, because the song is compared to itself, and thus will be the same at the matching time. 
+
+The bright yellow stripes indicate that the song is very different at a specific point in time, compared to another point in time. The pitch chromatogram contains a lot of bright yellow squares, indicating that the song has a lot of different sections.
+
+Furhtermore, given the timbre self-similarity matrix, there is a light yellow bar at the bottom and left of the plot. This could mean that the first section of about 25 seconds contains different tibre features than the rest of the song. 
 
 ### Diving deeper into "Nothing else matters": a __keygram__
 ```{r, keygram, echo=FALSE}
@@ -302,9 +525,7 @@ A keygram of a song compares  the keys of a song to a particular key template, t
 
 So at the beginning of the song, and towards the end, there are no good matches. However, around time 100s we can see a very dark color for the E:min chord, so chances are that this chord matches the template at this time in the song. 
 
-The song is in e minor 
-
-
+It turns out this song is indeed played E minor. So this corresponds to the estimation of the keygram.
 
 
 Classification {.storyboard data-icon="fa-chart-bar"}
@@ -431,7 +652,7 @@ workflow() %>%
 
 *** 
 
-If we look at the plot, we can see that _energy_,  _danceability_ and the _second timbre coefficient_ are the most important features. This corresponds to our first expectations. In the analysis of the different spotify features, we could see that there was a big difference in energy and danceability between the two playlists. Duration and liveness are the least important features. 
+If we look at the plot, we can see that _energy_,  _danceability_ and the _eleventh timbre coefficient_ are the most important features. This corresponds to our first expectations. In the analysis of the different spotify features, we could see that there was a big difference in energy and danceability between the two playlists. Duration and liveness are the least important features. 
 
 
 ### Now we use random forest to make classifications. During training and testing, all features are initially included. 
@@ -439,15 +660,19 @@ If we look at the plot, we can see that _energy_,  _danceability_ and the _secon
 
 ```{r, random_forest, echo=FALSE}
 wedstrijd_forest %>% get_conf_mat() %>% autoplot(type = "heatmap")
-wedstrijd_forest %>% get_pr()
 
 ```
 
 *** 
 
-Classification with random forest gives a precision of ... on the sprinters playlist, and .... precision on the long-distance playlist. If we look at the heatmap, we can see that ... of the songs in the sprinters playlist were not correctly classified as a song from the long-distance playlist. ... songs were not correctly classified from the long-distance playlist. 
-Looking at which songs were not correctly classified might help us get a clearer view of why this was the case. 
-- to do: taking a closer look at the songs.
+Classification with random forest gives the following precision and recall: 
+
+| Playlist      | Precision | Recall |
+| ------------- | --------- | ------ |
+| Long-distance | 0.81      | 0.81   |
+| Sprinters     | 0.81      | 0.81   |
+
+If we look at the heatmap, we can see that 10 of the songs in the sprinters playlist were not correctly classified. 9 songs were not correctly classified from the long-distance playlist. A reason for this could be that there are outliers in both playlists, in terms of energy and danceability. This could confuse the model in thinking that a song from the sprinters playlist with high danceability for example, belongs to the long-distance playlist. 
 
 
 ### Can we improve our model? We now use the top 6 most important features for classification. 
@@ -489,29 +714,24 @@ wedstrijd_forest <-
 wedstrijd_forest %>% get_conf_mat() %>% autoplot(type = "heatmap")
 
 ```
-```{r}
-wedstrijd_forest %>% get_pr()
-```
+
 
 ***
 
-After feature selection, the model did not improve significantly. Now the precision of the sprinters playlist is 0.83 and the precision of the long-distance playlist is 0.85. 
-- to do: beter uitleggen hoe dit kan 
-- nog verder proberen te verbeteren. 
+After feature selection, the model slightly improved. Now the precision of the sprinters playlist is 0.83 and the precision of the long-distance playlist is 0.85. 
 
 
 
 Conclusion {data-icon="fa-info-circle"}
 =========================================
 
-still working on conclusion 
-- to do: plots en precision recall mooi weergeven
-- alle overige plots in de analyse zetten
-- overal een goede uitleg geven 
+In the past 8 weeks of this course I have learned a lot about different Spotify fearues. I personally have no musical background, so to be able to apply several features to two playlists has been very interesting. 
 
+The expectation was that the sprinters playlist contained songs with more energy than the long-distance playlist. This turned out to be the case. In fact, energy was one of the most important features for classification. Along with danceability. 
 
+The sprinters and long-distance playlists both contained 52 songs, so they are not very large. This makes it a bit harder to make meaningful classifications. However, we still obtained precision of .... I did not expect this to be so high. 
 
-
+To conclude, in the future during competitions, I will know exactly  which of the playlists I am going to listen to. I prefer to listen to the sprinters playlist, where the songs have higher energy. 
 
 
 

@@ -7,28 +7,31 @@ library(heatmaply)
 library(spotifyr)
 library(compmus)
 library(purrr)
+library(gghighlight)
 
 long_dist <-
   get_playlist_audio_features(
     "thesoundsofspotify",
     "56vEaKq9VqFBlqtcXZAgn4"
   ) %>%
-  slice(1:30) %>%
   add_audio_analysis()
 sprinters <-
   get_playlist_audio_features(
     "thesoundsofspotify",
     "70wUKUusJoxhLNieGGRXpK"
   ) %>%
-  slice(1:30) %>%
   add_audio_analysis()
+
+
+
+
 jazz <-
   long_dist %>%
-  mutate(genre = "Long-Distance") %>%
-  bind_rows(sprinters %>% mutate(genre = "Sprinters"))
+  mutate(Playlist = "Long-distance") %>%
+  bind_rows(sprinters %>% mutate(Playlist = "Sprinters"))
 
 
-jazz %>%
+p1 <- jazz %>%
   mutate(
     sections =
       map(
@@ -43,18 +46,24 @@ jazz %>%
     aes(
       x = tempo,
       y = tempo_section_sd,
-      colour = genre,
+      colour = Playlist,
       alpha = loudness
     )
   ) +
   geom_point(aes(size = duration / 60)) +
   geom_rug() +
+  scale_colour_manual(values = c('#93B9D0', "#293352")) +
   theme_minimal() +
   ylim(0, 5) +
   labs(
     x = "Mean Tempo (bpm)",
     y = "SD Tempo",
-    colour = "Genre",
+    colour = "Playlist",
     size = "Duration (min)",
     alpha = "Volume (dBFS)"
-  )
+  ) 
+ 
+p1
+
+
+

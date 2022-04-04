@@ -51,26 +51,26 @@ halloween_juice <-
     track.name ~
       danceability +
       energy +
-      #loudness +
-      #speechiness +
+      loudness +
+      speechiness +
       acousticness +
       instrumentalness + 
-      #liveness + valence +
+      liveness + valence +
       tempo +
-      # duration +
-      # C + `C#|Db` + D + `D#|Eb` +
-      # E + `F` + `F#|Gb` + G +
-      #`G#|Ab` + A + `A#|Bb` + B +
-      #c01 +
+       duration +
+       C + `C#|Db` + D + `D#|Eb` +
+       E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 +
       c02 +
       c03 +
-      #c04 + c05 + 
+      c04 + c05 + 
       c06 +
       c07 + 
       c08 + 
-      #c09 + c10 + 
-      c11, 
-    #c12,
+      c09 + c10 + 
+      c11 + 
+      c12,
     data = halloween
   ) %>%
   step_center(all_predictors()) %>%

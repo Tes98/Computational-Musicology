@@ -8,6 +8,7 @@ library(spotifyr)
 library(compmus)
 library(plyr)
 library(cowplot)
+library(dplyr)
 
 # histogram of tempi 
 
@@ -17,20 +18,21 @@ sprinters <- get_playlist_audio_features("", "70wUKUusJoxhLNieGGRXpK")
 
 total <-
   bind_rows(
-    long_distance %>% mutate(Category = "Long-distance playlist"),
-    sprinters %>% mutate(Category = "Sprinters playlist")
+    long_distance %>% mutate(Playlist = "Long-distance playlist"),
+    sprinters %>% mutate(Playlist = "Sprinters playlist")
   )
 
 
-mu <- ddply(total, "Category", summarise, grp.mean=mean(tempo))
-head(mu)
+mu <- ddply(total, "Playlist", summarise, grp.mean=mean(tempo))
 
 tempi_hist <- total %>%
-  ggplot(aes(x=tempo, color=Category, fill=Category)) +
-  geom_histogram(position="dodge", alpha=0.5, binwidth = 15) + 
-  geom_vline(data=mu, aes(xintercept=grp.mean, color=Category),
+  ggplot(aes(x=tempo, y=..density.., fill=Playlist)) +
+  geom_histogram(alpha=0.6) + 
+  geom_density(alpha=0.2, fill='white') +
+  geom_vline(data=mu, aes(xintercept=grp.mean), colour = c("#93B9D0", "#295590"),
              linetype="dashed") +
   labs(title="Tempo histogram",x="Tempo(BPM)", y = "Count") +
+  scale_fill_manual(values = c('#93B9D0', '#295590'), guide = "none") +
   theme_classic()
 
 ggplotly((tempi_hist))
@@ -38,21 +40,16 @@ ggplotly((tempi_hist))
 
 # tempogram of Heart-shaped box
 #sprinter track with the highest tempo 
-nirvana <- get_tidy_audio_analysis("11LmqTE2naFULdEP94AUBa")
-styles <- get_tidy_audio_analysis("6ndmKwWqMozN2tcZqzCX4K")
+panther <- get_tidy_audio_analysis("20A08NCQknognYF4i9EyGu")
+lease_on_life <- get_tidy_audio_analysis("4ufkuONjQMNR2fyXu1bO9w")
 
-b <- 
-  bind_rows(
-  nirvana %>% mutate(Category = "Heart-Shaped Box"),
-  styles %>% mutate(Category = "Remember the Name (feat. Styles of Beyond)")
-)
 
-highest_tempo <- nirvana %>%
-  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+highest_tempo <- panther %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
   ggplot(aes(x = time, y = bpm, fill = power)) +
   geom_raster() +
   scale_fill_viridis_c(guide = "none") +
-  labs(title="Heart-Shaped Box", x = "Time (s)", y = "Tempo (BPM)") +
+  labs(title="Eyes of a Panther", x = "Time (s)", y = "Tempo (BPM)") +
   theme_classic() 
 
 
@@ -60,12 +57,19 @@ highest_tempo <- nirvana %>%
 # long distance track with lowest tempo
 
 
-low_tempo <- styles %>%
-  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+low_tempo <- lease_on_life %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
   ggplot(aes(x = time, y = bpm, fill = power)) +
   geom_raster() +
   scale_fill_viridis_c(guide = "none") +
-  labs(title="Remember the Name", x = "Time (s)", y = "Tempo (BPM)") +
+  labs(title="Lease On Life", x = "Time (s)", y = "Tempo (BPM)") +
   theme_classic() 
   
-plot_grid(highest_tempo, low_tempo, labels = "AUTO")
+plot_grid(highest_tempo, low_tempo, labels = "")
+
+ggplot2.histogram(data=weight, xName='weight',
+                  groupName='sex', legendPosition="top",
+                  alpha=0.5, addDensity=TRUE,
+                  addMeanLine=TRUE, meanLineColor="white", meanLineSize=1.5)
+
+
